@@ -59,6 +59,16 @@ class ServicioReservasTest {
         // disponible=false
         // - hoy: la fecha de hoy (LocalDate.now())
         // - manana: la fecha de mañana (hoy.plusDays(1))
+
+        // Desarrollo del setUp:
+        // Instancia el SUT inyectándole los dos mocks
+        servicioReservas = new ServicioReservas(pasarelaPago, servicioNotificacion);
+
+        // Datos de prueba
+        habitacionDisponible    = new Habitacion("H-101", TipoHabitacion.DOBLE, 120.0, true);
+        habitacionNoDisponible  = new Habitacion("H-202", TipoHabitacion.SUITE, 250.0, false);
+        hoy    = LocalDate.now();
+        manana = hoy.plusDays(1);
     }
 
     // ═══════════════════════════════════════════════════════════════════
@@ -90,6 +100,21 @@ class ServicioReservasTest {
             // - assertEquals("Carlos Pérez", reserva.huesped())
             // - assertEquals(360.0, reserva.totalPagado())
             // - assertNotNull(reserva.codigoReserva())
+
+            // Desarrollo de la reserva exitosa:
+
+            // Arrange
+            when(pasarelaPago.procesarCobro(eq("Carlos Pérez"), eq(360.0))).thenReturn(true);
+
+            // Act
+            Reserva reserva = servicioReservas.crearReserva(
+                    "Carlos Pérez", habitacionDisponible, hoy, hoy.plusDays(3));
+
+            // Assert
+            assertNotNull(reserva);
+            assertEquals("Carlos Pérez", reserva.huesped());
+            assertEquals(360.0, reserva.totalPagado());
+            assertNotNull(reserva.codigoReserva());
         }
 
         @Test
@@ -110,6 +135,19 @@ class ServicioReservasTest {
             //
             // ASSERT:
             // - Verifica que el totalPagado sea exactamente 756.0
+
+            // Desarrollo del descuento:
+
+            // Arrange
+            when(pasarelaPago.procesarCobro(eq("Ana López"), eq(756.0))).thenReturn(true);
+
+            // Act
+            Reserva reserva = servicioReservas.crearReserva(
+                    "Ana López", habitacionDisponible, hoy, hoy.plusDays(7));
+
+            // Assert
+            assertEquals(756.0, reserva.totalPagado());
+
         }
     }
 
