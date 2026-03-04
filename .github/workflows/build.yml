@@ -24,7 +24,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Correr tests y generar reporte Jacoco
-        run: ./gradlew test jacocoTestReport
+        run: ./gradlew test jacocoTestReport -Dorg.gradle.java.home=$JAVA_HOME
 
       - name: Publicar reporte de coverage
         uses: actions/upload-artifact@v4
