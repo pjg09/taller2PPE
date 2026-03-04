@@ -176,6 +176,15 @@ class ServicioReservasTest {
             // Pista: assertThrows retorna la excepción lanzada.
             // Puedes hacer: var ex = assertThrows(...);
             // assertTrue(ex.getMessage().contains("..."))
+
+            //Desarrollo de la excepcion para la habitación no disponible:
+
+            // Act & Assert
+            var ex = assertThrows(IllegalStateException.class, () ->
+                    servicioReservas.crearReserva(
+                            "Carlos Pérez", habitacionNoDisponible, hoy, manana));
+
+            assertTrue(ex.getMessage().contains("no está disponible"));
         }
 
         @Test
@@ -188,6 +197,16 @@ class ServicioReservasTest {
             // (misma fecha, no es posterior)
             // - Debe lanzar IllegalArgumentException
             // - Verifica que el mensaje contiene "fecha de salida"
+
+            // Desarrollo de la excepcion para fechas invalidas:
+
+            // Act & Assert
+            var ex = assertThrows(IllegalArgumentException.class, () ->
+                    servicioReservas.crearReserva(
+                            "Carlos Pérez", habitacionDisponible, hoy, hoy));
+
+            assertTrue(ex.getMessage().contains("fecha de salida"));
+
         }
 
         @Test
@@ -205,6 +224,19 @@ class ServicioReservasTest {
             // - Llama a crearReserva con habitacionDisponible, hoy, manana
             // - Verifica que lanza IllegalStateException
             // - Verifica que el mensaje contiene "rechazado"
+
+            // Desarrollo de la excepcion para pago rechazado:
+
+            // Arrange
+            when(pasarelaPago.procesarCobro(anyString(), anyDouble())).thenReturn(false);
+
+            // Act & Assert
+            var ex = assertThrows(IllegalStateException.class, () ->
+                    servicioReservas.crearReserva(
+                            "Carlos Pérez", habitacionDisponible, hoy, manana));
+
+            assertTrue(ex.getMessage().contains("rechazado"));
+
         }
     }
 
@@ -231,6 +263,19 @@ class ServicioReservasTest {
             // - Usa verify(servicioNotificacion,
             // times(1)).enviarConfirmacion(any(Reserva.class))
             // para confirmar que la notificación se envió exactamente 1 vez
+
+            // Desarrollo de la verificación de notificación:
+
+            // Arrange
+            when(pasarelaPago.procesarCobro(anyString(), anyDouble())).thenReturn(true);
+
+            // Act
+            servicioReservas.crearReserva(
+                    "Carlos Pérez", habitacionDisponible, hoy, manana);
+
+            // Assert
+            verify(servicioNotificacion, times(1)).enviarConfirmacion(any(Reserva.class));
+
         }
 
         @Test
@@ -247,6 +292,20 @@ class ServicioReservasTest {
             // ASSERT con verify():
             // - Usa verify(servicioNotificacion, never()).enviarConfirmacion(any())
             // para confirmar que NUNCA se llamó a enviarConfirmacion
+
+            // Desarrollo de la verificación de no envío de notificación:
+
+            // Arrange
+            when(pasarelaPago.procesarCobro(anyString(), anyDouble())).thenReturn(false);
+
+            // Act
+            assertThrows(IllegalStateException.class, () ->
+                    servicioReservas.crearReserva(
+                            "Carlos Pérez", habitacionDisponible, hoy, manana));
+
+            // Assert
+            verify(servicioNotificacion, never()).enviarConfirmacion(any());
+
         }
 
         @Test
@@ -263,6 +322,19 @@ class ServicioReservasTest {
             // ASSERT con verify():
             // - verify(pasarelaPago).procesarCobro("Luis García", 240.0)
             // - Esto verifica que se llamó al mock con los argumentos EXACTOS esperados
+
+            // Desarrollo de la verificación del monto cobrado sin descuento:
+
+            // Arrange
+            when(pasarelaPago.procesarCobro(anyString(), anyDouble())).thenReturn(true);
+
+            // Act
+            servicioReservas.crearReserva(
+                    "Luis García", habitacionDisponible, hoy, hoy.plusDays(2));
+
+            // Assert
+            verify(pasarelaPago).procesarCobro("Luis García", 240.0);
+
         }
     }
 
@@ -284,6 +356,15 @@ class ServicioReservasTest {
             //
             // ASSERT:
             // - assertEquals(500.0, total)
+
+            // Desarrollo del cálculo sin descuento:
+
+            // Act
+            double total = servicioReservas.calcularTotal(100.0, 5);
+
+            // Assert
+            assertEquals(500.0, total);
+
         }
 
         @Test
@@ -298,6 +379,15 @@ class ServicioReservasTest {
             //
             // ASSERT:
             // - assertEquals(1800.0, total)
+
+            // Desarrollo del cálculo con descuento:
+
+            // Act
+            double total = servicioReservas.calcularTotal(200.0, 10);
+
+            // Assert
+            assertEquals(1800.0, total);
+
         }
     }
 }
