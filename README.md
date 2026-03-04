@@ -1,0 +1,1 @@
+Hola profe, puede entrar a la pestaña Actions del repo, abrir el último build y descargar el jacoco-report para ver el coverage.
